@@ -4,13 +4,17 @@
 ![Java](https://img.shields.io/badge/Java-17-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3-brightgreen)
 ![React](https://img.shields.io/badge/React-18-61DAFB)
+![React Native](https://img.shields.io/badge/React%20Native-Expo%2051-000020)
+![Kotlin](https://img.shields.io/badge/Kotlin-1.9-7F52FF)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-A secure, full-stack task management platform with JWT authentication, built with a Spring Boot REST API and a React SPA. Designed as a complete, production-style reference project — real auth, per-user data isolation, tests, CI, and Docker, not just a CRUD toy.
+A secure, multi-platform task management system with JWT authentication: one Spring Boot REST API consumed by a **React web app**, a **React Native (Expo) mobile app**, and a **native Kotlin Android app (Jetpack Compose)**. Designed as a complete, production-style reference project — real auth, per-user data isolation, tests, CI, and Docker, not just a CRUD toy.
 
 **Stack**
 - Backend: Java 17, Spring Boot 3.3, Spring Security (JWT), Spring Data JPA, H2 (dev) / MySQL (prod), Maven
-- Frontend: React 18, React Router, Axios
+- Web: React 18, React Router, Axios
+- Mobile (cross-platform): React Native 0.74 via Expo, React Navigation, Axios, Expo SecureStore
+- Mobile (native Android): Kotlin, Jetpack Compose (Material 3), Retrofit + OkHttp, Coroutines, ViewModel
 - Infra: Dockerfile for each service + docker-compose for one-command startup + GitHub Actions CI
 
 
@@ -20,14 +24,16 @@ A secure, full-stack task management platform with JWT authentication, built wit
 
 Feel free to use this as-is or adapt it:
 
-> **TaskForge — Full-Stack Task Management Platform** ([GitHub](https://github.com/Shreyas9265/taskforge))
-> Designed and built a full-stack task management app with a Spring Boot REST API (JWT authentication, Spring Security, Spring Data JPA) and a React SPA (Hooks, Context API, React Router). Implemented per-user data isolation, server-side pagination and filtering, centralized exception handling, and a unit + integration test suite (JUnit 5, Mockito, MockMvc). Containerized with Docker and automated builds/tests via GitHub Actions CI.
+> **TaskForge — Multi-Platform Task Management System** ([GitHub](https://github.com/Shreyas9265/taskforge))
+> Designed and built a task management system with a Spring Boot REST API (JWT authentication, Spring Security, Spring Data JPA) shared by three clients: a React web app (Hooks, Context API, React Router), a cross-platform React Native (Expo) mobile app, and a native Kotlin Android app (Jetpack Compose, Retrofit, Coroutines, MVVM). Implemented per-user data isolation, server-side pagination and filtering, centralized exception handling, and a unit + integration test suite (JUnit 5, Mockito, MockMvc). Containerized with Docker and automated builds/tests via GitHub Actions CI.
 
 Resume bullet points (pick 2–4):
-- Built a full-stack task management app (Spring Boot + React) with JWT-based auth and per-user data isolation
+- Built a multi-platform task management system: Spring Boot REST API with JWT auth, consumed by React (web), React Native (iOS/Android) and native Kotlin (Android) clients
 - Designed REST API with pagination, filtering, and centralized validation/error handling using Spring Security and Spring Data JPA
+- Developed a native Android client in Kotlin with Jetpack Compose, MVVM (ViewModel + Compose state), Retrofit/OkHttp and coroutines, including token-based session handling that returns the user to login when the session expires
+- Built a React Native (Expo) mobile app with React Navigation, secure token storage (SecureStore), and shared API contract with the web client
 - Wrote unit and integration tests (JUnit 5, Mockito, MockMvc) covering auth flows and cross-user access control
-- Containerized backend, frontend, and MySQL with Docker Compose; automated build/test pipeline with GitHub Actions
+- Containerized backend, frontend, and MySQL with Docker Compose; automated build/test pipeline with GitHub Actions across Java, Node and Android
 
 ---
 
@@ -44,7 +50,9 @@ Resume bullet points (pick 2–4):
 - H2 in-memory DB for zero-setup local dev; MySQL profile for production
 - Dockerized, with docker-compose bringing up MySQL + backend + frontend together
 - Unit tests (Mockito) for service-layer logic + integration tests (MockMvc + H2) covering auth, validation, task CRUD, and cross-user data isolation
-- GitHub Actions CI pipeline: runs backend tests + packages the jar, builds the frontend, on every push/PR
+- Three clients on one API: React web, React Native (Expo) mobile, native Kotlin Android (Jetpack Compose)
+- Secure token storage on mobile (Expo SecureStore) and automatic return-to-login when a session expires
+- GitHub Actions CI pipeline: runs backend tests + packages the jar, builds the web app, bundles the React Native app, and assembles the Android APK, on every push/PR
 
 ---
 
@@ -69,7 +77,7 @@ taskforge/
 │   │   └── TaskForgeApplicationTests.java
 │   ├── Dockerfile
 │   └── pom.xml
-├── frontend/                        React SPA
+├── frontend/                        React web SPA
 │   ├── src/
 │   │   ├── components/              Navbar, TaskForm, TaskItem, ProtectedRoute
 │   │   ├── context/AuthContext.js   Global auth state
@@ -77,6 +85,14 @@ taskforge/
 │   │   └── services/api.js          Axios instance + JWT interceptor
 │   ├── Dockerfile
 │   └── package.json
+├── mobile-rn/                       React Native (Expo) app
+│   ├── App.js                       Navigation (auth stack vs. task stack)
+│   └── src/                         api.js, AuthContext.js, config.js, screens/, components/
+├── mobile-android/                  Native Kotlin Android app (Jetpack Compose)
+│   └── app/src/main/java/com/taskforge/mobile/
+│       ├── data/                    Retrofit API, models, SessionStore
+│       ├── ui/                      ViewModel + Compose screens
+│       └── MainActivity.kt
 ├── docker-compose.yml
 └── README.md
 ```
@@ -119,6 +135,47 @@ This project already comes as an initialized git repo with one commit. To publis
 5. **Try it**: register a user in the UI, log in, create a few tasks. Everything is wired end to end.
 
 If you'd rather run tests first to confirm everything's healthy: `cd backend && mvn test`.
+
+## Running the Mobile Apps
+
+Start the backend first (`cd backend && mvn spring-boot:run`, port 8080). Both mobile apps talk to it directly.
+
+| Where the app runs | Backend URL to use |
+|---|---|
+| Android emulator | `http://10.0.2.2:8080` (default in both apps) |
+| iOS simulator | `http://localhost:8080` (default in the React Native app) |
+| Physical phone | `http://<your-computer-LAN-IP>:8080` (phone and computer on the same Wi-Fi) |
+
+### React Native (Expo) — `mobile-rn/`
+
+Requires Node 18+. Install **Expo Go** on your phone, or use an Android emulator / iOS simulator.
+
+```bash
+cd mobile-rn
+npm install
+npx expo start            # press "a" for Android emulator, "i" for iOS simulator, or scan the QR code with Expo Go
+```
+
+On a physical phone, point it at your computer instead of the emulator default:
+
+```bash
+EXPO_PUBLIC_API_URL=http://192.168.1.20:8080 npx expo start      # macOS / Linux
+$env:EXPO_PUBLIC_API_URL="http://192.168.1.20:8080"; npx expo start   # Windows PowerShell
+```
+
+### Native Kotlin Android — `mobile-android/`
+
+Requires **Android Studio** (Koala or newer) with an Android SDK and an emulator.
+
+1. In Android Studio choose **Open** and select the `mobile-android` folder. Let Gradle sync finish (first sync downloads dependencies).
+2. Pick an emulator (Device Manager → Create Device) and press **Run ▶**.
+3. For a physical phone, change `API_BASE_URL` in `mobile-android/app/build.gradle.kts` to `http://<your-LAN-IP>:8080/`.
+
+Command line (needs Gradle 8.7+ installed): `cd mobile-android && gradle assembleDebug`.
+
+> The mobile apps use plain `http://` for local development only (`usesCleartextTraffic` is enabled in the Android manifest). Use HTTPS and disable that flag before any real deployment.
+
+---
 
 ## Running Locally (without Docker)
 
