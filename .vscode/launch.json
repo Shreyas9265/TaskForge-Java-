@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run TaskForge Backend",
+      "request": "launch",
+      "mainClass": "com.taskforge.TaskForgeApplication",
+      "projectName": "taskforge-backend",
+      "cwd": "${workspaceFolder}/backend",
+      "args": "--spring.profiles.active=dev"
+    }
+  ]
+}

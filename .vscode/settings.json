@@ -1,0 +1,11 @@
+{
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.project.sourcePaths": ["backend/src/main/java"],
+  "maven.terminal.customEnv": [],
+  "editor.formatOnSave": false,
+  "files.exclude": {
+    "**/target": true,
+    "**/node_modules": true,
+    "**/build": true
+  }
+}
